@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/0b4edcd1-edd8-409e-8291-3252bb0f3bba)# sales-department-web-scrapping
+# sales-department-web-scrapping
 
 **Download do executável:** [baixar versão 1](https://github.com/FelixGomes/sales_web_scrapping/releases/download/v1/sales_web_scrapping.exe).
 
