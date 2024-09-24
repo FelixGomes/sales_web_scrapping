@@ -1,4 +1,4 @@
-# sales-department-web-scrapping
+![image](https://github.com/user-attachments/assets/0b4edcd1-edd8-409e-8291-3252bb0f3bba)# sales-department-web-scrapping
 
 **Download do executável:** [baixar versão 1](https://github.com/FelixGomes/sales_web_scrapping/releases/download/v1/sales_web_scrapping.exe).
 
@@ -11,5 +11,12 @@ Veja exemplo de uma planilha com leads antes de rodar o código:
 
 Após rodar o código:
 ![image](https://github.com/user-attachments/assets/fb9511b1-b1d6-4f09-aecc-fc8a4f9694be)
+
+Observação:
+Se você colocar para o código extrair os dados a partir do link de uma planilha, ela deve estar compartilhada para qualquer pessoa com o link poder acessar:
+- no google docs, após tornar a planilha pública clique em copiar link e adicione **/export?format=xlsx** ao final do link
+![image](https://github.com/user-attachments/assets/837c8fb9-4f8a-4878-91ce-1e8d400155bf)
+
+
 
 
