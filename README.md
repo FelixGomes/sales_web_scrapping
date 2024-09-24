@@ -1,4 +1,7 @@
 # sales-department-web-scrapping
+
+**Download do executável:**
+
 Repositório de códigos utilizado para web scrapping e data extraction das planilhas com leads. Utilizado para área comercial, com objetivo de preencher uma planilha que possua o nome dos clientes (leads) com dados sobre **redes sociais, site oficial, telefone, email e nome dos sócios**. Os dados são extraídos da internet.
 
 Redes Sociais extraídas: **Facebook**, **Instagram** e **LinkedIn**. 
