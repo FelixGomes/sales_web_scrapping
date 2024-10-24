@@ -54,7 +54,7 @@ class MainApp(tk.Tk):
             messagebox.showerror("Erro", "Por favor, selecione um arquivo.")
             return
 
-        # Le o arquivo Excel
+        # Lê o arquivo Excel
         try:
             df = pd.read_excel(file_path)
         except Exception as e:
@@ -64,29 +64,51 @@ class MainApp(tk.Tk):
         # Verifica qual funcionalidade foi selecionada
         selected_function = self.function_var.get()
         if selected_function == 'Extrair dados de redes sociais':
-            self.extrair_dados_redes_sociais(df)
+            self.extrair_dados_redes_sociais(df, file_path)
         elif selected_function == 'Extrair dados do InformeCadastral':
-            self.extrair_informe_cadastral(df)
+            self.extrair_informe_cadastral(df, file_path)
 
-    def extrair_dados_redes_sociais(self, df):
+    def extrair_dados_redes_sociais(self, df, file_path):
         if 'Nome da empresa' not in df.columns:
             messagebox.showerror("Erro", "A coluna 'Nome da empresa' não foi encontrada no arquivo.")
             return
 
         empresas = df['Nome da empresa'].dropna().tolist()
         messagebox.showinfo("Sucesso", f"Extração de redes sociais iniciada para {len(empresas)} empresas.")
-        # Executa a função de extração de redes sociais
-        extrair_dados_redes_sociais(empresas, "empresas_redes_sociais.csv")
+        
+        # Executa a função de extração de redes sociais e atualiza o DataFrame
+        resultados = extrair_dados_redes_sociais(empresas)
+        for i, empresa in enumerate(empresas):
+            df.loc[df['Nome da empresa'] == empresa, ['Facebook', 'Instagram', 'LinkedIn', 'Site Oficial']] = resultados[i]
+        
+        # Salva o DataFrame atualizado na planilha original
+        df.to_excel(file_path, index=False)
+        messagebox.showinfo("Concluído", "Dados de redes sociais extraídos e salvos na planilha.")
 
-    def extrair_informe_cadastral(self, df):
+    def extrair_informe_cadastral(self, df, file_path):
         if 'CNPJ' not in df.columns:
             messagebox.showerror("Erro", "A coluna 'CNPJ' não foi encontrada no arquivo.")
             return
 
         cnpjs = df['CNPJ'].dropna().tolist()
         messagebox.showinfo("Sucesso", f"Extração de dados do InformeCadastral iniciada para {len(cnpjs)} CNPJs.")
-        # Executa a função de extração do InformeCadastral
-        extrair_informe_cadastral(cnpjs, "dados_empresas_com_socios.csv")
+        
+        # Executa a função de extração do InformeCadastral e atualiza o DataFrame
+        resultados = extrair_informe_cadastral(cnpjs)
+        for i, cnpj in enumerate(cnpjs):
+            df.loc[df['CNPJ'] == cnpj, ['Telefone', 'Email', 'Sócios']] = resultados[i]
+        
+        # Salva o DataFrame atualizado na planilha original
+        df.to_excel(file_path, index=False)
+        messagebox.showinfo("Concluído", "Dados do InformeCadastral extraídos e salvos na planilha.")
+
+# Funções externas de extração:
+def initialize_driver():
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.add_argument('--ignore-certificate-errors')
+    chrome_options.add_argument('--ignore-ssl-errors')
+    return webdriver.Chrome(options=chrome_options)
+    
 # Função para calcular a pontuação dos links
 def calcular_pontuacao_link(href, preview_text, palavras_empresa):
     pontuacao = 0
@@ -96,37 +118,119 @@ def calcular_pontuacao_link(href, preview_text, palavras_empresa):
         if palavra.lower() in preview_text.lower():
             pontuacao += 1
     return pontuacao
+
+def extrair_dados_redes_sociais(empresas):
+    driver = initialize_driver()
+    dados_empresa = []
     
-# Funções externas de extração:
-def initialize_driver():
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument('--ignore-certificate-errors')
-    chrome_options.add_argument('--ignore-ssl-errors')
-    return webdriver.Chrome(options=chrome_options)
 
-def salvar_progresso(dados_empresa, output_file="empresas_redes_sociais.csv"):
     try:
-        df_resultados = pd.DataFrame(dados_empresa)
-        df_resultados.to_csv(output_file, index=False)
-        print(f"Progresso salvo no arquivo '{output_file}'.")
-    except Exception as e:
-        print(f"Erro ao salvar o progresso: {e}")
+        for empresa in empresas:
+            facebook_link, instagram_link, linkedin_link, site_oficial_link = None, None, None, None
 
-def extrair_informe_cadastral(cnpjs, output_file='dados_empresas_com_socios.csv'):
+            # Extrai o link do Facebook
+            driver.get("https://www.google.com")
+            search_field = driver.find_element(By.NAME, "q")
+            search_field.send_keys(f"{empresa} facebook")
+            search_field.send_keys(Keys.RETURN)
+            time.sleep(5)
+            soup = BeautifulSoup(driver.page_source, 'html.parser')
+            for link in soup.find_all('a', href=True):
+                if 'facebook.com' in link['href']:
+                    facebook_link = link['href']
+                    print('Facebook: OK')
+                    break
+
+            # Extrai o link do Instagram
+            driver.get("https://www.google.com")
+            search_field = driver.find_element(By.NAME, "q")
+            search_field.send_keys(f"{empresa} instagram")
+            search_field.send_keys(Keys.RETURN)
+            time.sleep(5)
+            soup = BeautifulSoup(driver.page_source, 'html.parser')
+            for link in soup.find_all('a', href=True):
+                if 'instagram.com' in link['href']:
+                    instagram_link = link['href']
+                    print('Instagram: OK')
+                    break
+
+            # Extrai o link do LinkedIn
+            driver.get("https://www.google.com")
+            search_field = driver.find_element(By.NAME, "q")
+            search_field.send_keys(f"{empresa} linkedin")
+            search_field.send_keys(Keys.RETURN)
+            time.sleep(5)
+            soup = BeautifulSoup(driver.page_source, 'html.parser')
+            for link in soup.find_all('a', href=True):
+                if 'linkedin.com' in link['href']:
+                    linkedin_link = link['href']
+                    print('LinkedIn: OK')
+                    break
+
+            # Pesquisa no Google para Site Oficial
+            driver.get("https://www.google.com")
+            search_field = driver.find_element(By.NAME, "q")
+            search_field.send_keys(f"{empresa} site oficial")
+            search_field.send_keys(Keys.RETURN)
+            time.sleep(10)
+
+            # Extração de link do Site Oficial
+            page_source = driver.page_source
+            soup = BeautifulSoup(page_source, 'html.parser')
+
+            # Dicionário para armazenar links e suas pontuações
+            links_com_pontuacao = {}
+            empresa_palavras = empresa.split()
+            # Ignorar links que provavelmente não são o site oficial
+            palavras_ignoradas = ["cnpj", "econodata", "lista de empresas", "guia", "dados", "consulta", "banco de dados", "google", "search", "emis", "solutudo",
+                                      "boxcis", "gett", "fazcomex", "carreiraseprofissoes", "glassdoor", "estadao", "reclameaqui", "gupy", "instagram", "facebook", "find", "shell",
+                                      "relatorioreservado", "linkedin", "som-automotivo", "jusbrasil", "folhavitoria", "folha", "globo", "chapeco.org", "detran", "diregional", 
+                                      "leismunicipais", "infojobs", "enlizt", "jus.br", "trf4"]
+
+            # Procurando por links que sejam externos e que contenham palavras da empresa
+            for link in soup.find_all('a', href=True):
+                href = link['href']
+                # Obtendo o preview ou título da página
+                preview_text = link.get_text()  # Pega o texto visível do link
+                # Filtra apenas links externos e ignora sites irrelevantes
+                if href.startswith('http') and not any(ignorada in href.lower() for ignorada in palavras_ignoradas) and not any(ignorada in preview_text.lower() for ignorada in palavras_ignoradas):
+                    # Calcula a pontuação do link baseado nas palavras da empresa e no preview da página
+                    pontuacao = calcular_pontuacao_link(href, preview_text, empresa_palavras)
+                    # Apenas consideramos links com pontuação maior que 0
+                    if pontuacao > 0:
+                        links_com_pontuacao[href] = pontuacao
+
+            # Verifica se encontramos links e escolhe o melhor
+            if links_com_pontuacao:
+                # Ordena os links pela maior pontuação
+                site_oficial_link = max(links_com_pontuacao, key=links_com_pontuacao.get)
+                print(f"Link mais provável de {empresa}: {site_oficial_link}")
+            else:
+                print(f"Nenhum link encontrado relacionado à {empresa}.")
+
+            # Adiciona os resultados à lista
+            dados_empresa.append([facebook_link, instagram_link, linkedin_link, site_oficial_link])
+
+    finally:
+        driver.quit()
+
+    return dados_empresa
+
+def extrair_informe_cadastral(cnpjs):
     driver = initialize_driver()
     url = "https://www.informecadastral.com.br/"
     dados_empresa = []
 
     try:
         for cnpj in cnpjs:
+            telefone, email, socios_str = None, None, None
             try:
                 driver.get(url)
                 search_field = driver.find_element(By.CLASS_NAME, "form-control.border-radius-right-0.border-0")
                 search_field.send_keys(cnpj)
                 search_field.send_keys(Keys.RETURN)
                 time.sleep(5)
-                page_source = driver.page_source
-                soup = BeautifulSoup(page_source, 'html.parser')
+                soup = BeautifulSoup(driver.page_source, 'html.parser')
                 script_tag = soup.find('script', {'type': 'application/ld+json'})
 
                 if script_tag:
@@ -136,157 +240,16 @@ def extrair_informe_cadastral(cnpjs, output_file='dados_empresas_com_socios.csv'
                     socios_divs = soup.find_all('div', class_='col-md-6')
                     socios = [div.get_text(strip=True) for div in socios_divs]
                     socios_str = ", ".join(socios)
-                    dados_empresa.append({
-                        "CNPJ": cnpj,
-                        "Telefone": telefone,
-                        "Email": email,
-                        "Sócios": socios_str
-                    })
-                else:
-                    print(f"Dados não encontrados para o CNPJ {cnpj}.")
 
             except Exception as e:
                 print(f"Erro ao processar o CNPJ {cnpj}: {str(e)}")
-                salvar_progresso(dados_empresa, output_file)
-                driver.quit()
-                return
-
-    except KeyboardInterrupt:
-        print("\nInterrupção detectada. Salvando progresso...")
-        salvar_progresso(dados_empresa, output_file)
-        print("Progresso salvo. Saindo do programa.")
-        return
+            
+            dados_empresa.append([telefone, email, socios_str])
 
     finally:
         driver.quit()
-        salvar_progresso(dados_empresa, output_file)
 
-def extrair_dados_redes_sociais(empresas, output_file='empresas_redes_sociais.csv'):
-    driver = initialize_driver()
-    dados_empresa = []
-
-    try:
-        for empresa in empresas:
-            try:
-                print(f"Iniciando extração para a empresa: {empresa}")
-                facebook_link, instagram_link, linkedin_link, site_oficial_link = None, None, None, None
-
-                # Pesquisa no Google para Facebook
-                driver.get("https://www.google.com")
-                search_field = driver.find_element(By.NAME, "q")
-                search_field.send_keys(f"{empresa} facebook")
-                search_field.send_keys(Keys.RETURN)
-                time.sleep(10)  # Ajuste o tempo de espera conforme necessário
-
-                # Extração de link do Facebook
-                page_source = driver.page_source
-                soup = BeautifulSoup(page_source, 'html.parser')
-                for link in soup.find_all('a', href=True):
-                    href = link['href']
-                    if 'facebook.com' in href:
-                        facebook_link = href
-                        print('Facebook: OK')
-                        break
-
-                # Pesquisa no Google para Instagram
-                driver.get("https://www.google.com")
-                search_field = driver.find_element(By.NAME, "q")
-                search_field.send_keys(f"{empresa} instagram")
-                search_field.send_keys(Keys.RETURN)
-                time.sleep(10)
-
-                # Extração de link do Instagram
-                page_source = driver.page_source
-                soup = BeautifulSoup(page_source, 'html.parser')
-                for link in soup.find_all('a', href=True):
-                    href = link['href']
-                    if 'instagram.com' in href:
-                        instagram_link = href
-                        print('Instagram: OK')
-                        break
-
-                # Pesquisa no Google para LinkedIn
-                driver.get("https://www.google.com")
-                search_field = driver.find_element(By.NAME, "q")
-                search_field.send_keys(f"{empresa} linkedin")
-                search_field.send_keys(Keys.RETURN)
-                time.sleep(10)
-
-                # Extração de link do LinkedIn
-                page_source = driver.page_source
-                soup = BeautifulSoup(page_source, 'html.parser')
-                for link in soup.find_all('a', href=True):
-                    href = link['href']
-                    if 'linkedin.com' in href:
-                        linkedin_link = href
-                        print('LinkedIn: OK')
-                        break
-
-                # Pesquisa no Google para Site Oficial
-                driver.get("https://www.google.com")
-                search_field = driver.find_element(By.NAME, "q")
-                search_field.send_keys(f"{empresa} site oficial")
-                search_field.send_keys(Keys.RETURN)
-                time.sleep(10)
-
-                # Extração de link do Site Oficial
-                page_source = driver.page_source
-                soup = BeautifulSoup(page_source, 'html.parser')
-
-                # Dicionário para armazenar links e suas pontuações
-                links_com_pontuacao = {}
-                empresa_palavras = empresa.split()
-                # Ignorar links que provavelmente não são o site oficial
-                palavras_ignoradas = ["cnpj", "econodata", "lista de empresas", "guia", "dados", "consulta", "banco de dados", "google", "search", "emis", "solutudo",
-                                      "boxcis", "gett", "fazcomex", "carreiraseprofissoes", "glassdoor", "estadao", "reclameaqui", "gupy", "instagram", "facebook", "find", "shell",
-                                      "relatorioreservado", "linkedin", "som-automotivo", "jusbrasil", "folhavitoria", "folha", "globo", "chapeco.org", "detran", "diregional", 
-                                      "leismunicipais", "infojobs", "enlizt", "jus.br", "trf4"]
-
-                # Procurando por links que sejam externos e que contenham palavras da empresa
-                for link in soup.find_all('a', href=True):
-                    href = link['href']
-                    # Obtendo o preview ou título da página
-                    preview_text = link.get_text()  # Pega o texto visível do link
-                    # Filtra apenas links externos e ignora sites irrelevantes
-                    if href.startswith('http') and not any(ignorada in href.lower() for ignorada in palavras_ignoradas) and not any(ignorada in preview_text.lower() for ignorada in palavras_ignoradas):
-                        # Calcula a pontuação do link baseado nas palavras da empresa e no preview da página
-                        pontuacao = calcular_pontuacao_link(href, preview_text, empresa_palavras)
-                        # Apenas consideramos links com pontuação maior que 0
-                        if pontuacao > 0:
-                            links_com_pontuacao[href] = pontuacao
-
-                # Verifica se encontramos links e escolhe o melhor
-                if links_com_pontuacao:
-                    # Ordena os links pela maior pontuação
-                    site_oficial_link = max(links_com_pontuacao, key=links_com_pontuacao.get)
-                    print(f"Link mais provável de {empresa}: {site_oficial_link}")
-                else:
-                    print(f"Nenhum link encontrado relacionado à {empresa}.")
-
-                dados_empresa.append({
-                    "Nome da empresa": empresa,
-                    "Facebook": facebook_link,
-                    "Instagram": instagram_link,
-                    "LinkedIn": linkedin_link,
-                    "Site Oficial": site_oficial_link
-                })
-                print(f"Extração concluída para a empresa: {empresa}")
-
-            except Exception as e:
-                print(f"Erro ao processar a empresa {empresa}: {str(e)}")
-                salvar_progresso(dados_empresa, output_file)
-                driver.quit()
-                return
-
-    except KeyboardInterrupt:
-        print("\nInterrupção detectada. Salvando progresso...")
-        salvar_progresso(dados_empresa, output_file)
-        print("Progresso salvo. Saindo do programa.")
-        return
-
-    finally:
-        driver.quit()
-        salvar_progresso(dados_empresa, output_file)
+    return dados_empresa
 
 if __name__ == "__main__":
     app = MainApp()
