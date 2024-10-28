@@ -12,10 +12,29 @@ Veja exemplo de uma planilha com leads antes de rodar o código:
 Após rodar o código:
 ![image](https://github.com/user-attachments/assets/fb9511b1-b1d6-4f09-aecc-fc8a4f9694be)
 
-Observação:
-Se você colocar para o código extrair os dados a partir do link de uma planilha, ela deve estar compartilhada para qualquer pessoa com o link poder acessar:
-- no google docs, após tornar a planilha pública clique em copiar link e adicione **/export?format=xlsx** ao final do link
-![image](https://github.com/user-attachments/assets/837c8fb9-4f8a-4878-91ce-1e8d400155bf)
+## Funcionalidades:
+### Extrair dados de redes sociais
+- Extrai os dados de Facebook, Instagram, LinkedIn e Site Oficial da empresa
+- A extração ocorre utilizando o nome da empresa para buscar os dados no google
+![image](https://github.com/user-attachments/assets/28f9f054-e267-426f-bf2e-61452fe4ad2d)
+
+### Extrair dados do informe cadastral
+- Extrai os dados de telefone, email e sócios da empresa
+- A extração ocorre utilizando o CNPJ informado na planilha
+- Os dados são extraídos apenas do site Informe Cadastral, que utiliza dados públicos e divulgados pelas empresas
+![image](https://github.com/user-attachments/assets/609d5ee0-ec92-4dbc-88d6-6bd7451317a8)
+
+### Escreve os dados na planilha automáticamente
+- Todas as funcionalidades disponíveis, ao final da execução, irão escrever as informações na planilha inserida pelo usuário
+
+### Observações
+- Certifique-se de colocar os dados de **CNPJ** e **Nome da empresa** na planilha para que a aplicação funcione
+https://media.discordapp.net/attachments/1273994158796705833/1299093816674091068/image.png?ex=671fe765&is=671e95e5&hm=931f79689ecfc1d2aff23d3ce8a9cec3caec245e96df039fe9daeabb560bf0b7&=&format=webp&quality=lossless&width=688&height=347
+- Para rodar a aplicação, é necessário ter o navegador Google Chrome instalado na sua máquina
+- A aplicação funciona em segundo plano, portanto ela irá abrir e fechar páginas do navegador Google Chrome
+- Para que os dados sejam salvos na planilha, a aplicação deve rodar até o final
+
+
 
 
 
