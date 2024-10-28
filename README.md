@@ -29,7 +29,7 @@ Após rodar o código:
 
 ### Observações
 - Certifique-se de colocar os dados de **CNPJ** e **Nome da empresa** na planilha para que a aplicação funcione
-https://media.discordapp.net/attachments/1273994158796705833/1299093816674091068/image.png?ex=671fe765&is=671e95e5&hm=931f79689ecfc1d2aff23d3ce8a9cec3caec245e96df039fe9daeabb560bf0b7&=&format=webp&quality=lossless&width=688&height=347
+![image](https://github.com/user-attachments/assets/6ba0373a-f22b-4119-af16-30e73c34e2f0)
 - Para rodar a aplicação, é necessário ter o navegador Google Chrome instalado na sua máquina
 - A aplicação funciona em segundo plano, portanto ela irá abrir e fechar páginas do navegador Google Chrome
 - Para que os dados sejam salvos na planilha, a aplicação deve rodar até o final
