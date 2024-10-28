@@ -2,7 +2,7 @@
 
 **Download do executável:** [baixar versão 1.1](https://github.com/FelixGomes/sales_web_scrapping/releases/download/v1.1/sales_web_scrapping.exe).
 
-Repositório de códigos utilizado para web scrapping e data extraction das planilhas com leads. Utilizado para área comercial, com objetivo de preencher uma planilha que possua o nome dos clientes (leads) com dados sobre **redes sociais, site oficial, telefone, email e nome dos sócios**. Os dados são extraídos da internet.
+Repositório de códigos utilizado para web scrapping e extração de dados das planilhas com leads. Utilizado para área comercial, com objetivo de preencher uma planilha que possua o nome dos clientes (leads) com dados sobre **redes sociais, site oficial, telefone, email e nome dos sócios**. Os dados são extraídos da internet.
 
 Redes Sociais extraídas: **Facebook**, **Instagram** e **LinkedIn**. 
 
